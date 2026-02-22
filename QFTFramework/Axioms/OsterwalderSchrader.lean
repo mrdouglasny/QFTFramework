@@ -18,11 +18,13 @@ flat ℝ^d, cylinder ℝ × T^{d-1}_L, lattice aℤ^d, and any future spacetime.
 
 * `OS0_Analyticity` — Analyticity of the generating functional
 * `OS1_Regularity` — Exponential regularity bound
+* `OS1'_SchwingerGrowth` — Factorial growth bound on Schwinger functions
 * `OS2_Invariance` — Symmetry group invariance
 * `OS3_ReflectionPositivity` — Reflection positivity
 * `OS4_Clustering` — Clustering (correlation decay)
 * `OS4_Ergodicity` — Ergodicity (time-average convergence)
 * `OSTheory` — Bundle of all axioms, extending `QFTData`
+* `OSReconstructible` — Extends `OSTheory` with Schwinger growth for reconstruction
 
 ## References
 
@@ -56,6 +58,45 @@ exponential bound controlled by a seminorm-like functional N. -/
 def OS1_Regularity (Q : QFTData S T) : Prop :=
   ∃ (c : ℝ) (N : S.TestFunℂ → ℝ), c > 0 ∧
     ∀ (f : S.TestFunℂ), ‖Q.genFunℂ f‖ ≤ Real.exp (c * N f)
+
+/-! ## OS-1': Schwinger Function Growth (Linear Growth Condition)
+
+The "linear growth condition" of Osterwalder-Schrader II. This bounds
+the n-point Schwinger functions S_n with factorial growth in n and
+linear dependence on a seminorm of the test function. This condition is
+needed for the Wightman reconstruction theorem.
+
+For theories constructed via a measure (GFF, P(Φ)₂), OS1' follows
+from OS0 + OS1 via Cauchy estimates on the entire generating functional,
+plus nuclearity of the test function space. However the proof requires
+nuclear space infrastructure, so we state it as a separate condition. -/
+
+/-- Schwinger functions S_n: the n-point correlation functions.
+S_n(f₁, …, fₙ) = ∫ ⟨ω, f₁⟩ ⋯ ⟨ω, fₙ⟩ dμ(ω). -/
+noncomputable def schwingerFunction (Q : QFTData S T) (n : ℕ)
+    (f : Fin n → S.TestFun) : ℝ :=
+  ∫ ω, ∏ i, S.eval ω (f i) ∂Q.measure.toMeasure
+
+/-- OS1' (Schwinger Function Growth): The n-point Schwinger functions
+satisfy a factorial growth bound.
+
+There exist constants α > 0, β > 0, γ ≥ 0 and a seminorm p on
+test functions such that for all n and all test functions fᵢ:
+
+  |S_n(f₁, …, fₙ)| ≤ α · βⁿ · (n!)^γ · ∏ᵢ p(fᵢ)
+
+This is the "linear growth condition" of OS II — "linear" refers to
+the dependence on each fᵢ being through a single seminorm (linear in f),
+while the growth in n is controlled by the factorial bound.
+
+For the GFF: γ = 1/2 suffices (Wick's theorem gives (n-1)!! ≤ n!^{1/2}).
+For P(Φ)₂: γ depends on the polynomial degree (via hypercontractivity). -/
+def OS1'_SchwingerGrowth (Q : QFTData S T) : Prop :=
+  ∃ (α β : ℝ) (γ : ℝ) (p : S.TestFun → ℝ),
+    α > 0 ∧ β > 0 ∧ 0 ≤ γ ∧
+    (∀ (n : ℕ) (f : Fin n → S.TestFun),
+      ‖schwingerFunction S Q n f‖ ≤
+        α * β ^ n * (↑n.factorial : ℝ) ^ γ * ∏ i, p (f i))
 
 /-! ## OS-2: Symmetry Invariance -/
 
@@ -138,5 +179,20 @@ structure OSTheory (S : SpacetimeData) (T : TheoryData)
   os4_clustering : OS4_Clustering S toQFTData
   /-- OS4: Ergodicity -/
   os4_ergodicity : OS4_Ergodicity S toQFTData
+
+/-- An OS theory with the additional Schwinger function growth bound
+needed for the Wightman reconstruction theorem.
+
+OS0 + OS1 imply OS1' (via Cauchy estimates + nuclearity of the test
+function space), but the proof requires nuclear space infrastructure.
+For now we state OS1' as a separate condition.
+
+For specific theories, OS1' is verified directly:
+- GFF: Wick's theorem gives γ = 1/2
+- P(Φ)₂: hypercontractivity gives finite γ depending on the degree -/
+structure OSReconstructible (S : SpacetimeData) (T : TheoryData)
+    extends OSTheory S T where
+  /-- OS1': Schwinger function factorial growth bound -/
+  os1' : OS1'_SchwingerGrowth S toOSTheory.toQFTData
 
 end
