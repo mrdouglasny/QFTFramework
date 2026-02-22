@@ -5,7 +5,7 @@ Authors: Michael R. Douglas
 -/
 
 import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.Analysis.Distribution.SchwartzSpace
+import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import Mathlib.Topology.Algebra.Module.WeakDual
 import Mathlib.MeasureTheory.Measure.MeasureSpace
 

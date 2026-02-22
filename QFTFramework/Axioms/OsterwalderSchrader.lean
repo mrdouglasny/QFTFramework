@@ -5,6 +5,7 @@ Authors: Michael R. Douglas
 -/
 
 import QFTFramework.QFTData
+import Mathlib.Analysis.Analytic.Basic
 
 /-!
 # Osterwalder-Schrader Axioms — Generic Formulation

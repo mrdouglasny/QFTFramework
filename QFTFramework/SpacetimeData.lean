@@ -65,6 +65,7 @@ structure SpacetimeData where
   [instTS_TF : TopologicalSpace TestFun]
   [instACG_TFℂ : AddCommGroup TestFunℂ]
   [instMod_TFℂ : Module ℂ TestFunℂ]
+  [instTS_TFℂ : TopologicalSpace TestFunℂ]
   /-- Embedding of real test functions into complex ones -/
   toComplex : TestFun →L[ℝ] TestFunℂ
 
@@ -106,15 +107,15 @@ structure SpacetimeData where
 namespace SpacetimeData
 
 -- Make instances available when working with a spacetime
-attribute [instance] instACG_TF instMod_TF instTS_TF instACG_TFℂ instMod_TFℂ
+attribute [instance] instACG_TF instMod_TF instTS_TF instACG_TFℂ instMod_TFℂ instTS_TFℂ
 attribute [instance] instMS_FC instTS_FC instGrp_SG instNACG_TV
 
 /-- Positive-time test function type (subtype of the submodule) -/
 abbrev PositiveTimeFun (S : SpacetimeData) := S.positiveTimeSubmodule
 
-/-- Translate a test function by a translation vector (via symmetry action on real part) -/
-noncomputable def translateTestFun (S : SpacetimeData) (a : S.TransVec) (f : S.TestFun) :
-    S.TestFunℂ :=
-  S.symAction (S.translateEmbed a) (S.toComplex f)
+/-- Translate a complex test function by a translation vector. -/
+noncomputable def translateTestFunℂ (S : SpacetimeData) (a : S.TransVec)
+    (f : S.TestFunℂ) : S.TestFunℂ :=
+  S.symAction (S.translateEmbed a) f
 
 end SpacetimeData

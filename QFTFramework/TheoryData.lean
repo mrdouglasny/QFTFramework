@@ -4,6 +4,21 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Michael R. Douglas
 -/
 
+import Mathlib.Data.Real.Basic
+import Mathlib.Data.ZMod.Defs
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+
+/-- Unit has a trivial monoid structure (the terminal monoid). -/
+instance : Monoid Unit where
+  mul _ _ := ()
+  one := ()
+  mul_assoc _ _ _ := rfl
+  one_mul _ := Unit.ext _ _
+  mul_one _ := Unit.ext _ _
+
+/-- ZMod n has a multiplicative monoid structure. -/
+instance (n : ℕ) : Monoid (ZMod n) := inferInstance
+
 /-!
 # TheoryData — QFT Specification Hierarchy
 
@@ -33,7 +48,7 @@ structure TheoryData where
   /-- Internal (global) symmetry group.
       Examples: `Unit` (trivial), `ZMod 2` (Ising ℤ₂), O(N) model -/
   InternalSymGroup : Type
-  [instISG : Group InternalSymGroup]
+  [instISG : Monoid InternalSymGroup]
   /-- Number of bosonic field species -/
   nBosonic : ℕ
   /-- Number of fermionic field species -/
@@ -52,7 +67,7 @@ The same action data can be placed on different spacetimes. -/
 structure QFTActionData extends TheoryData where
   /-- Gauge group (Unit for no gauge, SU n, U n, etc.) -/
   gaugeGroup : Type
-  [instGaugeGrp : Group gaugeGroup]
+  [instGaugeGrp : Monoid gaugeGroup]
   /-- Scalar mass squared m²ᵢ for each bosonic species -/
   scalarMassSq : Fin nBosonic → ℝ
   /-- Scalar self-interaction potential V(φ₁, ..., φₙ) -/
@@ -107,25 +122,26 @@ noncomputable def freeScalar (m : ℝ) : QFTActionData where
   gaugeCoupling := 0
 
 /-- φ⁴ theory: 1 scalar with quartic self-coupling, ℤ₂ symmetry φ → -φ. -/
-noncomputable def phi4Theory (m : ℝ) (λ_ : ℝ) : QFTActionData where
+noncomputable def phi4Theory (m : ℝ) (lam : ℝ) : QFTActionData where
   InternalSymGroup := ZMod 2
   nBosonic := 1
   nFermionic := 0
   gaugeGroup := Unit
-  scalarMassSq := fun _ => m ^ 2
-  scalarPotential := fun φ => λ_ * (φ 0) ^ 4
+  scalarMassSq := fun _ => (m : ℝ) ^ 2
+  scalarPotential := fun (φ : Fin 1 → ℝ) => lam * (φ 0) ^ 4
   fermionMass := Fin.elim0
   yukawaCoeff := fun i => Fin.elim0 i
   gaugeCoupling := 0
 
 /-- O(N) model: N scalars with O(N) global symmetry and φ⁴ interaction. -/
-noncomputable def oNModel (N : ℕ) (m : ℝ) (λ_ : ℝ) : QFTActionData where
+noncomputable def oNModel (N : ℕ) (m : ℝ) (lam : ℝ) : QFTActionData where
   InternalSymGroup := Unit  -- TODO: OrthogonalGroup N ℝ when available
   nBosonic := N
   nFermionic := 0
   gaugeGroup := Unit
-  scalarMassSq := fun _ => m ^ 2
-  scalarPotential := fun φ => λ_ * (∑ i, (φ i) ^ 2) ^ 2
+  scalarMassSq := fun _ => (m : ℝ) ^ 2
+  scalarPotential := fun (φ : Fin N → ℝ) =>
+    lam * (∑ i : Fin N, (φ i) ^ 2) ^ 2
   fermionMass := Fin.elim0
   yukawaCoeff := fun i => Fin.elim0 i
   gaugeCoupling := 0
