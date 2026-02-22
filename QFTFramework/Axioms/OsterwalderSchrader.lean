@@ -1,0 +1,138 @@
+/-
+Copyright (c) 2025-2026 Michael R. Douglas. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Michael R. Douglas
+-/
+
+import QFTFramework.QFTData
+
+/-!
+# Osterwalder-Schrader Axioms — Generic Formulation
+
+This file defines the Osterwalder-Schrader axioms (OS0–OS4) parametrized over
+`SpacetimeData` and `QFTData`, so that the same axiom definitions apply to
+flat ℝ^d, cylinder ℝ × T^{d-1}_L, lattice aℤ^d, and any future spacetime.
+
+## Main Definitions
+
+* `OS0_Analyticity` — Analyticity of the generating functional
+* `OS1_Regularity` — Exponential regularity bound
+* `OS2_Invariance` — Symmetry group invariance
+* `OS3_ReflectionPositivity` — Reflection positivity
+* `OS4_Clustering` — Clustering (correlation decay)
+* `OS4_Ergodicity` — Ergodicity (time-average convergence)
+* `OSTheory` — Bundle of all axioms, extending `QFTData`
+
+## References
+
+* Osterwalder–Schrader, *Axioms for Euclidean Green's functions* I & II
+* Glimm–Jaffe, *Quantum Physics*, Ch. 6, 19
+-/
+
+open MeasureTheory Complex Filter
+open scoped BigOperators
+
+noncomputable section
+
+variable (S : SpacetimeData) {T : TheoryData}
+
+/-! ## OS-0: Analyticity -/
+
+/-- OS0 (Analyticity): The complex generating functional is analytic in the
+test function coefficients.
+
+For any finite collection of complex test functions J₁, …, Jₙ, the map
+(z₁, …, zₙ) ↦ Z_ℂ[∑ᵢ zᵢ Jᵢ] is analytic on ℂⁿ. -/
+def OS0_Analyticity (Q : QFTData S T) : Prop :=
+  ∀ (n : ℕ) (J : Fin n → S.TestFunℂ),
+    AnalyticOn ℂ (fun z : Fin n → ℂ =>
+      Q.genFunℂ (∑ i, z i • J i)) Set.univ
+
+/-! ## OS-1: Regularity -/
+
+/-- OS1 (Regularity): The complex generating functional satisfies an
+exponential bound controlled by a seminorm-like functional N. -/
+def OS1_Regularity (Q : QFTData S T) : Prop :=
+  ∃ (c : ℝ) (N : S.TestFunℂ → ℝ), c > 0 ∧
+    ∀ (f : S.TestFunℂ), ‖Q.genFunℂ f‖ ≤ Real.exp (c * N f)
+
+/-! ## OS-2: Symmetry Invariance -/
+
+/-- OS2 (Symmetry Invariance): The generating functional is invariant under
+the symmetry group of the spacetime.
+
+Z_ℂ[f] = Z_ℂ[g · f] for all g in the symmetry group. -/
+def OS2_Invariance (Q : QFTData S T) : Prop :=
+  ∀ (g : S.SymGroup) (f : S.TestFunℂ),
+    Q.genFunℂ f = Q.genFunℂ (S.symAction g f)
+
+/-! ## OS-3: Reflection Positivity -/
+
+/-- OS3 (Reflection Positivity): For any finite collection of positive-time
+test functions fᵢ and real coefficients cᵢ, the reflection matrix is
+positive semidefinite:
+
+∑ᵢ ∑ⱼ cᵢ cⱼ Re(Z[fᵢ - Θ fⱼ]) ≥ 0
+
+where Θ is the time reflection operator. -/
+def OS3_ReflectionPositivity (Q : QFTData S T) : Prop :=
+  ∀ (n : ℕ) (f : Fin n → S.positiveTimeSubmodule) (c : Fin n → ℝ),
+    0 ≤ ∑ i, ∑ j, c i * c j *
+      (Q.genFunR ((f i).val - S.timeReflection ((f j).val))).re
+
+/-! ## OS-4: Clustering and Ergodicity -/
+
+/-- OS4 Clustering: Correlations between spatially separated regions decay.
+
+Uses `Filter.cocompact` on `TransVec`:
+- ℝ^d: ‖a‖ → ∞ (nontrivial clustering)
+- T^d: vacuously true (compact, cocompact = ⊥)
+- ℝ^k × T^{d-k}: only ℝ^k directions matter -/
+def OS4_Clustering (Q : QFTData S T) : Prop :=
+  ∀ (f g : S.TestFun),
+    Tendsto
+      (fun a : S.TransVec =>
+        Q.genFunR (f + S.timeReflection.toLinearMap.toFun
+          (sorry : S.TestFun))  -- TODO: need real translate
+        - Q.genFunR f * Q.genFunR g)
+      (Filter.cocompact S.TransVec)
+      (nhds 0)
+
+/-- OS4 Ergodicity: Time averages of observables converge to expectations in L²(μ). -/
+def OS4_Ergodicity (Q : QFTData S T) : Prop :=
+  ∀ (n : ℕ) (z : Fin n → ℂ) (f : Fin n → S.TestFunℂ),
+    let μ_meas := Q.measure.toMeasure
+    let A : S.FieldConfig → ℂ := fun ω =>
+      ∑ j, z j * exp (sorry : ℂ)  -- TODO: complex pairing
+    Tendsto
+      (fun T : ℝ =>
+        ∫ ω, ‖A (S.timeShift T ω)
+              - ∫ ω', A ω' ∂μ_meas‖^2 ∂μ_meas)
+      atTop
+      (nhds 0)
+
+/-! ## Bundled Axiom Structures -/
+
+/-- A quantum field theory satisfying all Osterwalder-Schrader axioms.
+
+Extends `QFTData` with OS0–OS4 as proof obligations.
+Requires `hasRealAction` (weight = 1), since reflection positivity
+needs a genuine positive measure. -/
+structure OSTheory (S : SpacetimeData) (T : TheoryData)
+    extends QFTData S T where
+  /-- The OS axioms require weight = 1 (real action) -/
+  real_action : toQFTData.hasRealAction
+  /-- OS0: Analyticity -/
+  os0 : OS0_Analyticity S toQFTData
+  /-- OS1: Regularity -/
+  os1 : OS1_Regularity S toQFTData
+  /-- OS2: Symmetry invariance -/
+  os2 : OS2_Invariance S toQFTData
+  /-- OS3: Reflection positivity -/
+  os3 : OS3_ReflectionPositivity S toQFTData
+  /-- OS4: Clustering -/
+  os4_clustering : OS4_Clustering S toQFTData
+  /-- OS4: Ergodicity -/
+  os4_ergodicity : OS4_Ergodicity S toQFTData
+
+end
