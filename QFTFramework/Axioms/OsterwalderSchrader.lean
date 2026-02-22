@@ -85,6 +85,11 @@ def OS3_ReflectionPositivity (Q : QFTData S T) : Prop :=
 
 /-- OS4 Clustering: Correlations between spatially separated regions decay.
 
+For all real test functions f, g:
+  Z[f + τ_a(g)] → Z[f] · Z[g] as ‖a‖ → ∞
+
+where τ_a translates test functions by the translation vector a.
+
 Uses `Filter.cocompact` on `TransVec`:
 - ℝ^d: ‖a‖ → ∞ (nontrivial clustering)
 - T^d: vacuously true (compact, cocompact = ⊥)
@@ -93,24 +98,22 @@ def OS4_Clustering (Q : QFTData S T) : Prop :=
   ∀ (f g : S.TestFun),
     Tendsto
       (fun a : S.TransVec =>
-        Q.genFunR (f + S.timeReflection.toLinearMap.toFun
-          (sorry : S.TestFun))  -- TODO: need real translate
+        Q.genFunR (f + S.translate a g)
         - Q.genFunR f * Q.genFunR g)
       (Filter.cocompact S.TransVec)
       (nhds 0)
 
-/-- OS4 Ergodicity: Time averages of observables converge to expectations in L²(μ). -/
+/-- OS4 Ergodicity: The time translation group acts ergodically on (FieldConfig, μ).
+
+Any time-shift-invariant integrable function is a.e. equal to its expectation.
+This is equivalent to uniqueness of the vacuum state. -/
 def OS4_Ergodicity (Q : QFTData S T) : Prop :=
-  ∀ (n : ℕ) (z : Fin n → ℂ) (f : Fin n → S.TestFunℂ),
-    let μ_meas := Q.measure.toMeasure
-    let A : S.FieldConfig → ℂ := fun ω =>
-      ∑ j, z j * exp (sorry : ℂ)  -- TODO: complex pairing
-    Tendsto
-      (fun T : ℝ =>
-        ∫ ω, ‖A (S.timeShift T ω)
-              - ∫ ω', A ω' ∂μ_meas‖^2 ∂μ_meas)
-      atTop
-      (nhds 0)
+  ∀ (A : S.FieldConfig → ℝ),
+    Integrable A Q.measure.toMeasure →
+    (∀ t : ℝ, ∀ᵐ ω ∂Q.measure.toMeasure,
+      A (S.timeShift t ω) = A ω) →
+    ∀ᵐ ω ∂Q.measure.toMeasure,
+      A ω = ∫ ω', A ω' ∂Q.measure.toMeasure
 
 /-! ## Bundled Axiom Structures -/
 

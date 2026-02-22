@@ -95,6 +95,8 @@ structure SpacetimeData where
   [instNACG_TV : NormedAddCommGroup TransVec]
   /-- Embedding translations into the full symmetry group -/
   translateEmbed : TransVec → SymGroup
+  /-- Translation action on real test functions: f ↦ f(· - a) -/
+  translate : TransVec → (TestFun →L[ℝ] TestFun)
 
   -- Time structure for OS axioms
   /-- Time reflection operator on real test functions: (t, x⃗) ↦ (-t, x⃗) -/
@@ -112,6 +114,11 @@ attribute [instance] instMS_FC instTS_FC instGrp_SG instNACG_TV
 
 /-- Positive-time test function type (subtype of the submodule) -/
 abbrev PositiveTimeFun (S : SpacetimeData) := S.positiveTimeSubmodule
+
+/-- Translate a real test function by a translation vector. -/
+noncomputable def translateTestFun (S : SpacetimeData) (a : S.TransVec)
+    (f : S.TestFun) : S.TestFun :=
+  S.translate a f
 
 /-- Translate a complex test function by a translation vector. -/
 noncomputable def translateTestFunℂ (S : SpacetimeData) (a : S.TransVec)
