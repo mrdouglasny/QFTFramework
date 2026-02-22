@@ -38,8 +38,14 @@ polynomial, and Λ is a finite volume cutoff.
 
 **Gagliardo-Nirenberg-Sobolev Inequality** — Mathlib (van Doorn & Macbeth)
 ([ITP 2024](https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ITP.2024.37))
-- Formalized GNS inequality with "marginal construction" for iterated integrals
-- Establishes Sobolev-type infrastructure and dimension-induction patterns
+- Main file: `Mathlib.Analysis.FunctionalSpaces.SobolevInequality`
+  ([docs](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Analysis/FunctionalSpaces/SobolevInequality.html))
+- Key theorems: `eLpNorm_le_eLpNorm_fderiv` (Lp norm bounded by Lq norm
+  of derivative for compactly supported C¹ functions between
+  finite-dimensional spaces)
+- Marginal construction: `Mathlib.MeasureTheory.Integral.Marginal`
+  (iterated integration infrastructure, dimension induction)
+- Establishes Sobolev-type function space infrastructure in Lean 4
 
 **Gaussian Measures** — our gaussian-field project
 - DyninMityaginSpace typeclass (nuclear Fréchet spaces)
@@ -149,7 +155,7 @@ Cluster expansions are only needed later for:
 | Harris-Kleitman inequality | Available in Mathlib (special case of FKG) |
 | Full FKG inequality | NOT formalized — need to generalize Harris-Kleitman |
 | Weak convergence of measures | Available in Mathlib |
-| Gagliardo-Nirenberg-Sobolev inequality | Available in Mathlib |
+| Gagliardo-Nirenberg-Sobolev inequality | Available: `Mathlib.Analysis.FunctionalSpaces.SobolevInequality` |
 
 ### Approach 2: Stochastic Quantization (Da Prato-Debussche) — Not Recommended
 
