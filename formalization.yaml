@@ -1,0 +1,132 @@
+# formalization.yaml — https://github.com/mathlib-initiative/formalization.yaml (v0.3)
+# QFTFramework: abstract axiomatic scaffolding for Euclidean QFT in Lean 4.
+# STATUS: definitions/structures only — 0 theorems, 0 lemmas, 0 sorries, 20 axioms.
+# All "axioms" are structural (axiomatized torus test-function spaces Mathlib lacks,
+# plus one Group instance), NOT proved results. Headline content is DEFINITIONAL.
+version: "v0.3"
+
+project:
+  name: "QFTFramework"
+  authors: ["Michael R. Douglas"]
+  license: "Apache-2.0"   # declared in every file header; NOTE: no LICENSE file is committed
+
+sources:
+  - title: "Axioms for Euclidean Green's Functions"
+    authors: ["Konrad Osterwalder", "Robert Schrader"]
+    id: "10.1007/BF01645738"
+    type: "paper"
+    license: "proprietary"
+    note: "OS I. The OS0–OS4 axiom definitions formalize this and its sequel (OS II)."
+  - title: "Axioms for Euclidean Green's Functions II"
+    authors: ["Konrad Osterwalder", "Robert Schrader"]
+    id: "10.1007/BF01608978"
+    type: "paper"
+    license: "proprietary"
+    note: "OS II. Source of the linear-growth condition (OS1'_SchwingerGrowth)."
+  - title: "Quantum Physics: A Functional Integral Point of View"
+    authors: ["James Glimm", "Arthur Jaffe"]
+    id: "ISBN:978-0-387-96477-7"
+    type: "textbook"
+    license: "proprietary"
+    note: "Ch. 6, 19. Primary reference cited throughout for the OS framework."
+
+status:
+  scope: >
+    Abstract, spacetime- and theory-agnostic SCAFFOLDING for Euclidean QFT.
+    A four-layer hierarchy of Lean structures: (1) SpacetimeData (geometry,
+    test functions, distributions, symmetry group, time structure);
+    (2) TheoryData / QFTActionData / CFTData (field content, couplings, bootstrap
+    data); (3) QFTData (probability measure + complex weight + generating
+    functional); (4) the Osterwalder–Schrader axioms OS0–OS4 (each a Prop on
+    QFTData) bundled into OSTheory / OSReconstructible. Three concrete spacetime
+    instances are set up: Euclidean R^d, lattice aZ^d, and the cylinder
+    R × T^{d-1}_L (test-function/distribution spaces AXIOMATIZED, since Mathlib
+    lacks Schwartz-type spaces on mixed R × torus domains). Standard theory
+    instances freeScalar, phi4Theory, oNModel are defined. NOT covered: there are
+    NO proved theorems or lemmas; nothing is instantiated end-to-end. Downstream
+    repos gaussian-field and GFF fill the abstract slots and supply the proofs.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms:
+    # 20 genuine `axiom` declarations, all STRUCTURAL (no mathematical content proved):
+    - instGroupLatticeSymmetryGroup            # Spacetime/Lattice.lean — Group instance asserted not built
+    - TestFunctionTorus                        # Spacetime/Torus.lean (19 torus-space axioms below)
+    - TestFunctionTorusℂ
+    - FieldConfigurationTorus
+    - instAddCommGroupTestFunctionTorus
+    - instModuleTestFunctionTorus
+    - instTopologicalSpaceTestFunctionTorus
+    - instAddCommGroupTestFunctionTorusℂ
+    - instModuleTestFunctionTorusℂ
+    - instMeasurableSpaceFieldConfigurationTorus
+    - instTopologicalSpaceFieldConfigurationTorus
+    - distributionPairingTorus
+    - distributionPairingTorusℂ
+    - timeReflectionTorus
+    - positiveTimeSubmoduleTorus
+    - timeTranslationDistTorus
+    - translateTestFunTorus
+    - SymmetryGroupTorus
+    - instGroupSymmetryGroupTorus
+    - symmetryActionTorus
+  main_results: []   # none: 0 theorems, 0 lemmas. Headline content is definitional (see alignment).
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["claude-opus-4-6"]
+      framework: "Claude Code"
+      prompting_notes: >
+        Sole automation method. Every commit carries a Claude Opus 4.6 co-author
+        trailer. Used to draft the structure hierarchy and OS axiom definitions.
+        No Codex (no AGENTS.md) or Gemini (no GEMINI.md, no trailers) involvement.
+  notes: "Models read from git commit co-author trailers; all commits attribute Claude Opus 4.6 only."
+
+fidelity:
+  divergences: >
+    The OS axioms are stated generically (parametrized over SpacetimeData /
+    QFTData) rather than for a fixed spacetime. Complex actions are accommodated
+    via a reweighting field (weight = 1 for real actions). The cylinder
+    spacetime's test-function and distribution spaces are AXIOMATIZED rather than
+    constructed (Mathlib has no Schwartz space on R × torus); these slots are
+    intended to be filled concretely downstream (GFF / gaussian-field).
+
+review:
+  status: "self-assessed"
+  reviewers: []
+  notes: >
+    0 sorries; 20 structural axioms (19 axiomatizing torus spaces/operations,
+    1 a Group instance); 0 theorems/lemmas. This is an axiomatic SCAFFOLDING /
+    interface repo — definitional content only, no proved results. Apache-2.0 is
+    declared in file headers but no LICENSE file is committed.
+
+alignment:
+  namespace: ""   # most declarations top-level; QFTData/SpacetimeData have their own namespaces
+  statements:
+    - source: "ISBN:978-0-387-96477-7"
+      lean: "SpacetimeData"
+      module: "QFTFramework.SpacetimeData"
+      status: "other"
+      note: "structure: geometric/symmetry/time data for a spacetime (definition only)."
+    - source: "ISBN:978-0-387-96477-7"
+      lean: "QFTData"
+      module: "QFTFramework.QFTData"
+      status: "other"
+      note: "structure: measure + complex weight + generating functional (definition only)."
+    - source: "10.1007/BF01645738"
+      lean: "OS3_ReflectionPositivity"
+      module: "QFTFramework.Axioms.OsterwalderSchrader"
+      status: "other"
+      note: "Prop definition of the OS3 reflection-positivity axiom; not a proved theorem."
+    - source: "10.1007/BF01608978"
+      lean: "OS1'_SchwingerGrowth"
+      module: "QFTFramework.Axioms.OsterwalderSchrader"
+      status: "other"
+      note: "Prop definition of the OS II linear-growth condition; not a proved theorem."
+    - source: "10.1007/BF01645738"
+      lean: "OSTheory"
+      module: "QFTFramework.Axioms.OsterwalderSchrader"
+      status: "other"
+      note: "structure bundling OS0–OS4 as proof obligations over QFTData; no instance is constructed."
+
+acknowledgements: ""
